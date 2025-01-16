@@ -12,3 +12,4 @@
 
 Application: ${spring.application.name}
 Version:     ${spring-boot.version}
+
