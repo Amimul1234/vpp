@@ -1,0 +1,14 @@
+    __      __  ____   ____
+    \ \    / / |  _ \ |  _ \
+     \ \  / /  | |_) || |_) |
+      \ \/ /   |  __/ |  __/
+       \__/    |_|    |_|
+
+        Virtual Power Plant (VPP) by Power Ledger
+
+-------------------------------------------------------------
+  Aggregating distributed energy resources for a cleaner grid!
+-------------------------------------------------------------
+
+Application: ${spring.application.name}
+Version:     ${spring-boot.version}

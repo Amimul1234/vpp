@@ -15,6 +15,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>vpp</name>
     <description>vpp</description>
+
     <url/>
     <licenses>
         <license/>
@@ -81,6 +82,7 @@
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>vpp</finalName>
     </build>
 
 </project>
