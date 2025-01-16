@@ -13,7 +13,7 @@ public class Battery {
     @Id
     @GeneratedValue
     @Column(name = "uuid", updatable = false, nullable = false)
-    private UUID uuid;
+    private String uuid;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -27,7 +27,7 @@ public class Battery {
     @PrePersist
     public void prePersist() {
         if (uuid == null) {
-            uuid = UUID.randomUUID();
+            uuid = UUID.randomUUID().toString();
         }
     }
 }
