@@ -11,9 +11,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -48,37 +50,39 @@ public class BatteryController {
     }
 
 
-    @GetMapping(
-            value = "/registration/{requestId}",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @Operation(
-            summary = "Check registration status",
-            description = "Retrieves the current status of a bulk battery registration request.",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Registration status retrieved successfully",
-                            content = @Content(schema = @Schema(implementation = RegistrationStatus.class))
-                    ),
-                    @ApiResponse(
-                            responseCode = "404",
-                            description = "Registration request not found"
-                    )
-            }
-    )
-    public ResponseEntity<RegistrationStatus> getRegistrationStatus(
-            @PathVariable @Parameter(description = "Bulk registration request ID", required = true) String requestId) {
-
-        log.info("Fetching registration status for requestId: {}", requestId);
-
-        RegistrationStatus status = batteryService.getRegistrationStatus(requestId);
-        if (status == null) {
-            log.warn("Registration status not found for requestId: {}", requestId);
-            return ResponseEntity.notFound().build();
-        }
-
-        log.info("Registration status for requestId {}: {}", requestId, status);
-        return ResponseEntity.ok(status);
-    }
+//
+//
+//    @GetMapping(
+//            value = "/registration/{requestId}",
+//            produces = MediaType.APPLICATION_JSON_VALUE
+//    )
+//    @Operation(
+//            summary = "Check registration status",
+//            description = "Retrieves the current status of a bulk battery registration request.",
+//            responses = {
+//                    @ApiResponse(
+//                            responseCode = "200",
+//                            description = "Registration status retrieved successfully",
+//                            content = @Content(schema = @Schema(implementation = RegistrationStatus.class))
+//                    ),
+//                    @ApiResponse(
+//                            responseCode = "404",
+//                            description = "Registration request not found"
+//                    )
+//            }
+//    )
+//    public ResponseEntity<RegistrationStatus> getRegistrationStatus(
+//            @PathVariable @Parameter(description = "Bulk registration request ID", required = true) String requestId) {
+//
+//        log.info("Fetching registration status for requestId: {}", requestId);
+//
+//        RegistrationStatus status = batteryService.getRegistrationStatus(requestId);
+//        if (status == null) {
+//            log.warn("Registration status not found for requestId: {}", requestId);
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        log.info("Registration status for requestId {}: {}", requestId, status);
+//        return ResponseEntity.ok(status);
+//    }
 }

@@ -25,6 +25,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class BatteryServiceImpl implements BatteryService {
 
+    private static final String ERROR_RETRY_MSG = "Retry %d/%d failed for batch ID: %s. Error: %s";
+    private static final String ERROR_CACHE_MISSING_MSG = "Cache entry not found for bulk request ID: %s";
+    private static final String ERROR_BULK_REG_FAILED_MSG = "Bulk registration failed due to missing status.";
+    private static final String SUCCESS_BULK_REG_MSG = "Bulk registration completed successfully.";
+    private static final String PARTIAL_BULK_REG_MSG = "Bulk registration partially completed with failed batches.";
+
     @Value("${kafka.battery.retry-attempts}")
     private int maxRetries;
 
@@ -71,10 +77,11 @@ public class BatteryServiceImpl implements BatteryService {
                 sent = true;
             } catch (Exception ex) {
                 retryCount++;
-                log.error("Retry {}/{} failed for batch ID: {}. Error: {}", retryCount, maxRetries, batchRequestId, ex.getMessage());
+                log.error(String.format(ERROR_RETRY_MSG, retryCount, maxRetries, batchRequestId, ex.getMessage()));
                 if (retryCount == maxRetries) {
                     updateBulkRegistrationStatus(bulkRequestId, batchRequestId, ex.getMessage(), batch);
                 }
+                applyExponentialBackoff(retryCount);
             }
         }
     }
@@ -104,13 +111,16 @@ public class BatteryServiceImpl implements BatteryService {
                                               List<BatteryDto> failedBatch) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
-            log.error("Cache entry not found for bulk request ID: {}", bulkRequestId);
+            log.error(String.format(ERROR_CACHE_MISSING_MSG, bulkRequestId));
             return;
         }
 
         if (error == null) {
             status.setCompletedBatches(status.getCompletedBatches() + 1);
         } else {
+            if (status.getFailedBatchDetails() == null) {
+                status.setFailedBatchDetails(new HashMap<>());
+            }
             status.setFailedBatches(status.getFailedBatches() + 1);
             status.getFailedBatchDetails().put(batchRequestId, failedBatch);
         }
@@ -123,7 +133,7 @@ public class BatteryServiceImpl implements BatteryService {
     private void finalizeBulkRegistrationStatus(String bulkRequestId) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
-            log.error("Cache entry not found for bulk request ID: {}", bulkRequestId);
+            log.error(String.format(ERROR_CACHE_MISSING_MSG, bulkRequestId));
             return;
         }
 
@@ -141,15 +151,22 @@ public class BatteryServiceImpl implements BatteryService {
     private ResponseDto createBulkRegistrationResponse(String bulkRequestId) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
-            log.error("Cache entry not found for bulk request ID: {}", bulkRequestId);
-            return ResponseDto.error("Bulk registration failed due to missing status.", HttpStatus.INTERNAL_SERVER_ERROR.toString());
+            log.error(ERROR_BULK_REG_FAILED_MSG);
+            return ResponseDto.error(ERROR_BULK_REG_FAILED_MSG, HttpStatus.INTERNAL_SERVER_ERROR.toString());
         }
 
         if (status.getFailedBatches() > 0) {
-            return ResponseDto.error("Bulk registration partially completed with failed batches.",
-                    HttpStatus.PARTIAL_CONTENT.toString());
+            return ResponseDto.error(PARTIAL_BULK_REG_MSG, HttpStatus.PARTIAL_CONTENT.toString());
         }
 
-        return ResponseDto.success("Bulk registration completed successfully.", bulkRequestId);
+        return ResponseDto.success(SUCCESS_BULK_REG_MSG, bulkRequestId);
+    }
+
+    private void applyExponentialBackoff(int retryCount) {
+        try {
+            Thread.sleep((long) Math.pow(2, retryCount) * 1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
