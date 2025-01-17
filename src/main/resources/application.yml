@@ -19,3 +19,4 @@ kafka:
 
     battery:
         batch-size: 100
+        retry-attempts: 3

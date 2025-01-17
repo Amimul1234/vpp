@@ -13,5 +13,5 @@ public class BulkRegistrationStatusDto {
     private int failedBatches;
     private String bulkRequestId;
     private int completedBatches;
-    private Map<Integer, List<String>> failedBatchDetails;
+    private Map<String, List<BatteryDto>> failedBatchDetails;
 }
