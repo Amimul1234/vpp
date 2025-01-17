@@ -16,3 +16,6 @@ kafka:
         batteries: battery-topic
     group:
         id: battery-consumer-group
+
+    battery:
+        batch-size: 100

@@ -1,6 +1,5 @@
 package io.powerledger.vpp.service.impl;
 
-import io.powerledger.vpp.config.KafkaProducerConfig;
 import io.powerledger.vpp.dto.BatteryDto;
 import io.powerledger.vpp.service.BatteryService;
 import lombok.RequiredArgsConstructor;
