@@ -1,61 +1,52 @@
 package io.powerledger.vpp.controller;
 
-import io.powerledger.vpp.config.BatteryRegistrationProducer;
-import io.powerledger.vpp.dto.BatteryBulkRegistrationDto;
 import io.powerledger.vpp.dto.BatteryDto;
 import io.powerledger.vpp.dto.ResponseDto;
+import io.powerledger.vpp.service.BatteryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
-@RestController("api/v1/batteries")
+@Slf4j
+@RestController
+@RequestMapping("/api/v1/batteries")
 @RequiredArgsConstructor
 public class BatteryController {
 
-    private final BatteryRegistrationProducer registrationProducer;
-    private final RegistrationStatusService registrationStatusService;
+    private final BatteryService batteryService;
 
-    @PostMapping(
-            value = "/bulk"
-    )
+    @PostMapping
     @Operation(
-            summary = "Register multiple batteries in bulk",
-            description = "Accepts a list of batteries for registration. Large lists of batteries are processed in chunks.",
+            summary = "Bulk register batteries",
+            description = "Accepts a list of batteries and initiates a bulk registration process.",
             responses = {
                     @ApiResponse(
-                            responseCode = "202",
-                            description = "Batteries accepted for registration",
+                            responseCode = "200",
+                            description = "Bulk registration process initiated successfully",
                             content = @Content(schema = @Schema(implementation = ResponseDto.class))
                     ),
                     @ApiResponse(
                             responseCode = "400",
-                            description = "Invalid input data"
+                            description = "Invalid input format"
                     )
             }
     )
-    public CompletableFuture<ResponseEntity<ResponseDto>> registerBatteries(
-            @Valid @RequestBody BatteryBulkRegistrationDto bulkRegistrationDTO) {
-
-        List<BatteryDto> batteries = bulkRegistrationDTO.getBatteries();
+    public ResponseEntity<ResponseDto> bulkRegisterBatteries(
+            @RequestBody @Parameter(description = "List of batteries to register", required = true) List<BatteryDto> batteries) {
         log.info("Received bulk registration request for {} batteries", batteries.size());
-
-        return registrationProducer.sendBulkRegistrationRequest(batteries)
-                .thenApply(requestId -> {
-                    String message = String.format("Bulk registration initiated. Total batteries: %d", batteries.size());
-                    return ResponseEntity.accepted()
-                            .body(new RegistrationResponse(requestId, message));
-                });
+        return new ResponseEntity<>(batteryService.initiateBulkRegistration(batteries), HttpStatus.OK);
     }
+
 
     @GetMapping(
             value = "/registration/{requestId}",
@@ -63,7 +54,7 @@ public class BatteryController {
     )
     @Operation(
             summary = "Check registration status",
-            description = "Retrieves the current status of a bulk battery registration request",
+            description = "Retrieves the current status of a bulk battery registration request.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
@@ -77,15 +68,17 @@ public class BatteryController {
             }
     )
     public ResponseEntity<RegistrationStatus> getRegistrationStatus(
-            @Parameter(description = "Bulk registration request ID")
-            @PathVariable String requestId) {
+            @PathVariable @Parameter(description = "Bulk registration request ID", required = true) String requestId) {
 
-        RegistrationStatus status = registrationStatusService.getStatus(requestId);
+        log.info("Fetching registration status for requestId: {}", requestId);
+
+        RegistrationStatus status = batteryService.getRegistrationStatus(requestId);
         if (status == null) {
             log.warn("Registration status not found for requestId: {}", requestId);
             return ResponseEntity.notFound().build();
         }
 
+        log.info("Registration status for requestId {}: {}", requestId, status);
         return ResponseEntity.ok(status);
     }
 }
