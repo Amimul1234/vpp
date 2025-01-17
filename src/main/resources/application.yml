@@ -1,4 +1,22 @@
 spring:
+    application:
+        name: vpp
+
+    datasource:
+        url: jdbc:mysql://localhost:3306/vppdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+        username: vppuser
+        password: vpppassword
+
+    jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: true
+        properties:
+            hibernate:
+                format_sql: true
+                use_sql_comments: true
+                dialect: org.hibernate.dialect.MySQLDialect
+
     kafka:
         bootstrap-servers: localhost:9092
         consumer:
@@ -7,6 +25,7 @@ spring:
             enable-auto-commit: true
             key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
             value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
         producer:
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
             value-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -14,6 +33,7 @@ spring:
 kafka:
     topic:
         batteries: battery-topic
+
     group:
         id: battery-consumer-group
 

@@ -58,9 +58,22 @@ services:
             KAFKA_UI_BASIC_AUTH_PASSWORD: secret
         restart: always
 
+    redis:
+        image: redis:latest
+        container_name: redis
+        restart: always
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        environment:
+            REDIS_PASSWORD: "vpp"
+
 volumes:
     mysql_data:
     zookeeper_data:
         driver: local
     kafka_data:
+        driver: local
+    redis_data:
         driver: local

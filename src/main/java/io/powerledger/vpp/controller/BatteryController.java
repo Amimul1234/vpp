@@ -48,41 +48,4 @@ public class BatteryController {
         log.info("Received bulk registration request for {} batteries", batteries.size());
         return new ResponseEntity<>(batteryService.initiateBulkRegistration(batteries), HttpStatus.OK);
     }
-
-
-//
-//
-//    @GetMapping(
-//            value = "/registration/{requestId}",
-//            produces = MediaType.APPLICATION_JSON_VALUE
-//    )
-//    @Operation(
-//            summary = "Check registration status",
-//            description = "Retrieves the current status of a bulk battery registration request.",
-//            responses = {
-//                    @ApiResponse(
-//                            responseCode = "200",
-//                            description = "Registration status retrieved successfully",
-//                            content = @Content(schema = @Schema(implementation = RegistrationStatus.class))
-//                    ),
-//                    @ApiResponse(
-//                            responseCode = "404",
-//                            description = "Registration request not found"
-//                    )
-//            }
-//    )
-//    public ResponseEntity<RegistrationStatus> getRegistrationStatus(
-//            @PathVariable @Parameter(description = "Bulk registration request ID", required = true) String requestId) {
-//
-//        log.info("Fetching registration status for requestId: {}", requestId);
-//
-//        RegistrationStatus status = batteryService.getRegistrationStatus(requestId);
-//        if (status == null) {
-//            log.warn("Registration status not found for requestId: {}", requestId);
-//            return ResponseEntity.notFound().build();
-//        }
-//
-//        log.info("Registration status for requestId {}: {}", requestId, status);
-//        return ResponseEntity.ok(status);
-//    }
 }
