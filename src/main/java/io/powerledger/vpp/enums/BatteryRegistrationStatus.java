@@ -1,5 +1,5 @@
 package io.powerledger.vpp.enums;
 
 public enum BatteryRegistrationStatus {
-    PENDING, PROCESSING, COMPLETED, FAILED, PARTIALLY_COMPLETED
+    PENDING, PROCESSING, QUEUED, COMPLETED, FAILED, PARTIALLY_COMPLETED
 }

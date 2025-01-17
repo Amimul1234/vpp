@@ -141,7 +141,7 @@ public class BatteryServiceImpl implements BatteryService {
             status.setStatus(BatteryRegistrationStatus.PARTIALLY_COMPLETED);
             log.warn("Bulk request ID: {} completed with failures. Failed batches: {}", bulkRequestId, status.getFailedBatchDetails());
         } else {
-            status.setStatus(BatteryRegistrationStatus.COMPLETED);
+            status.setStatus(BatteryRegistrationStatus.QUEUED);
             log.info("Bulk request ID: {} completed successfully.", bulkRequestId);
         }
 
