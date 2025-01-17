@@ -2,11 +2,12 @@ package io.powerledger.vpp.dto;
 
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
-public class BatteryRegistrationMessageDto {
+public class BatteryRegistrationMessageDto implements Serializable {
     private List<BatteryDto> batteries;
     private LocalDateTime timestamp;
     private String batchRequestId;

@@ -28,7 +28,7 @@ spring:
 
         producer:
             key-serializer: org.apache.kafka.common.serialization.StringSerializer
-            value-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
     data:
         redis:
@@ -51,5 +51,5 @@ kafka:
         id: battery-consumer-group
 
     battery:
-        batch-size: 100
+        batch-size: 1
         retry-attempts: 3
