@@ -1,5 +1,6 @@
 package io.powerledger.vpp.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -10,6 +11,8 @@ public class ResponseDto {
     private String message;
     private Object data;
     private String errorCode;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime timestamp;
 
     public ResponseDto(String status, String message, Object data, String errorCode) {

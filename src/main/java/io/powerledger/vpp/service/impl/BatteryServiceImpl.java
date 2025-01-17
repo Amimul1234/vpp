@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -57,21 +58,26 @@ public class BatteryServiceImpl implements BatteryService {
 
         List<List<BatteryDto>> batches = BatchUtil.splitBatteriesIntoBatches(batteries, batchSize);
 
-        batches.parallelStream().forEach(batch -> processBatch(batch, bulkRequestId, totalBatches));
+        IntStream.range(0, totalBatches)
+                .parallel()
+                .forEach(index -> {
+                    List<BatteryDto> batch = batches.get(index);
+                    processBatch(batch, bulkRequestId, totalBatches, index + 1);
+                });
 
         finalizeBulkRegistrationStatus(bulkRequestId);
 
         return createBulkRegistrationResponse(bulkRequestId);
     }
 
-    private void processBatch(List<BatteryDto> batch, String bulkRequestId, int totalBatches) {
+    private void processBatch(List<BatteryDto> batch, String bulkRequestId, int totalBatches, int currentBatch) {
         int retryCount = 0;
         boolean sent = false;
         String batchRequestId = UUID.randomUUID().toString();
 
         while (retryCount < maxRetries && !sent) {
             try {
-                BatteryRegistrationMessageDto message = createBatchMessage(batch, batchRequestId, bulkRequestId, totalBatches);
+                BatteryRegistrationMessageDto message = createBatchMessage(batch, batchRequestId, bulkRequestId, totalBatches, currentBatch);
                 batteryRegistrationProducer.sendBulkRegistrationRequest(message);
                 updateBulkRegistrationStatus(bulkRequestId, batchRequestId, null, null);
                 sent = true;
@@ -96,13 +102,13 @@ public class BatteryServiceImpl implements BatteryService {
     }
 
     private BatteryRegistrationMessageDto createBatchMessage(List<BatteryDto> batch, String batchRequestId,
-                                                             String bulkRequestId, int totalBatches) {
+                                                             String bulkRequestId, int totalBatches, int currentBatch) {
         BatteryRegistrationMessageDto message = new BatteryRegistrationMessageDto();
         message.setBulkRequestId(bulkRequestId);
         message.setBatchRequestId(batchRequestId);
         message.setBatteries(batch);
         message.setTimestamp(LocalDateTime.now());
-        message.setBatchNumber(batch.size());
+        message.setBatchNumber(currentBatch);
         message.setTotalBatches(totalBatches);
         return message;
     }
