@@ -27,9 +27,9 @@ import java.util.stream.IntStream;
 public class BatteryServiceImpl implements BatteryService {
 
     private static final String ERROR_RETRY_MSG = "Retry %d/%d failed for batch ID: %s. Error: %s";
+    private static final String SUCCESS_BULK_REG_MSG = "Bulk registration completed successfully.";
     private static final String ERROR_CACHE_MISSING_MSG = "Cache entry not found for bulk request ID: %s";
     private static final String ERROR_BULK_REG_FAILED_MSG = "Bulk registration failed due to missing status.";
-    private static final String SUCCESS_BULK_REG_MSG = "Bulk registration completed successfully.";
     private static final String PARTIAL_BULK_REG_MSG = "Bulk registration partially completed with failed batches.";
 
     @Value("${kafka.battery.retry-attempts}")
