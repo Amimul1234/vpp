@@ -12,6 +12,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
 public class BeanDefinitionConfig {
@@ -47,5 +48,16 @@ public class BeanDefinitionConfig {
         LettuceConnectionFactory lettuceConnectionFactory = new LettuceConnectionFactory(redisHost, redisPort);
         lettuceConnectionFactory.setPassword(redisPassword);
         return lettuceConnectionFactory;
+    }
+
+    @Bean(name = "register")
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(50);
+        executor.setMaxPoolSize(100);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("AsyncExecutor-");
+        executor.initialize();
+        return executor;
     }
 }

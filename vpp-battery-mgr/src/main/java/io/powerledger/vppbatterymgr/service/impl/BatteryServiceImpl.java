@@ -11,26 +11,21 @@ import io.powerledger.vppbatterymgr.util.BatchUtil;
 import io.powerledger.vppbatterymgr.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.IntStream;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class BatteryServiceImpl implements BatteryService {
-
-    private static final String ERROR_RETRY_MSG = "Retry %d/%d failed for batch ID: %s. Error: %s";
-    private static final String SUCCESS_BULK_REG_MSG = "Bulk registration completed successfully.";
-    private static final String ERROR_CACHE_MISSING_MSG = "Cache entry not found for bulk request ID: %s";
-    private static final String ERROR_BULK_REG_FAILED_MSG = "Bulk registration failed due to missing status.";
-    private static final String PARTIAL_BULK_REG_MSG = "Bulk registration partially completed with failed batches.";
 
     @Value("${kafka.battery.retry-attempts}")
     private int maxRetries;
@@ -41,6 +36,9 @@ public class BatteryServiceImpl implements BatteryService {
     private final CacheUtil cacheUtil;
     private final BatteryRegistrationProducer batteryRegistrationProducer;
 
+    @Qualifier("register")
+    private final ThreadPoolTaskExecutor taskExecutor;
+
     @Override
     public ResponseDto initiateBulkRegistration(List<BatteryDto> batteries) {
         if (batteries == null || batteries.isEmpty()) {
@@ -49,23 +47,28 @@ public class BatteryServiceImpl implements BatteryService {
         }
 
         String bulkRequestId = UUID.randomUUID().toString();
-        log.info("Initiating bulk registration with ID: {} for {} batteries", bulkRequestId, batteries.size());
+        log.info("Initiating bulk registration asynchronously with ID: {} for {} batteries", bulkRequestId, batteries.size());
 
         int totalBatches = (int) Math.ceil((double) batteries.size() / batchSize);
         log.info("Processing {} batteries in {} batches", batteries.size(), totalBatches);
 
         setInitialStatusOnCache(bulkRequestId, totalBatches);
 
+        taskExecutor.execute(() -> processBatches(batteries, bulkRequestId, totalBatches));
+
+        return ResponseDto.success("Bulk registration initiated successfully.", bulkRequestId);
+    }
+
+    private void processBatches(List<BatteryDto> batteries, String bulkRequestId, int totalBatches) {
         List<List<BatteryDto>> batches = BatchUtil.splitBatteriesIntoBatches(batteries, batchSize);
 
-        IntStream.range(0, totalBatches).parallel().forEach(index -> {
+        for (int index = 0; index < totalBatches; index++) {
             List<BatteryDto> batch = batches.get(index);
-            processBatch(batch, bulkRequestId, totalBatches, index + 1);
-        });
+            int currentBatch = index + 1;
+            processBatch(batch, bulkRequestId, totalBatches, currentBatch);
+        }
 
         finalizeBulkRegistrationStatus(bulkRequestId);
-
-        return createBulkRegistrationResponse(bulkRequestId);
     }
 
     private void processBatch(List<BatteryDto> batch, String bulkRequestId, int totalBatches, int currentBatch) {
@@ -81,7 +84,7 @@ public class BatteryServiceImpl implements BatteryService {
                 sent = true;
             } catch (Exception ex) {
                 retryCount++;
-                log.error(String.format(ERROR_RETRY_MSG, retryCount, maxRetries, batchRequestId, ex.getMessage()));
+                log.error("Retry {}/{} failed for batch ID: {}. Error: {}", retryCount, maxRetries, batchRequestId, ex.getMessage());
                 if (retryCount == maxRetries) {
                     updateBulkRegistrationStatus(bulkRequestId, batchRequestId, ex.getMessage(), batch);
                 }
@@ -113,7 +116,7 @@ public class BatteryServiceImpl implements BatteryService {
     private void updateBulkRegistrationStatus(String bulkRequestId, String batchRequestId, String error, List<BatteryDto> failedBatch) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
-            log.error(String.format(ERROR_CACHE_MISSING_MSG, bulkRequestId));
+            log.error("Cache entry not found for bulk request ID: {}", bulkRequestId);
             return;
         }
 
@@ -134,7 +137,7 @@ public class BatteryServiceImpl implements BatteryService {
     private void finalizeBulkRegistrationStatus(String bulkRequestId) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
-            log.error(String.format(ERROR_CACHE_MISSING_MSG, bulkRequestId));
+            log.error("Cache entry not found for bulk request ID: {}", bulkRequestId);
             return;
         }
 
@@ -147,20 +150,6 @@ public class BatteryServiceImpl implements BatteryService {
         }
 
         cacheUtil.updateCacheEntry(bulkRequestId, status);
-    }
-
-    private ResponseDto createBulkRegistrationResponse(String bulkRequestId) {
-        BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
-        if (status == null) {
-            log.error(ERROR_BULK_REG_FAILED_MSG);
-            return ResponseDto.error(ERROR_BULK_REG_FAILED_MSG, HttpStatus.INTERNAL_SERVER_ERROR.toString());
-        }
-
-        if (status.getFailedBatches() > 0) {
-            return ResponseDto.error(PARTIAL_BULK_REG_MSG, HttpStatus.PARTIAL_CONTENT.toString());
-        }
-
-        return ResponseDto.success(SUCCESS_BULK_REG_MSG, bulkRequestId);
     }
 
     private void applyExponentialBackoff(int retryCount) {
