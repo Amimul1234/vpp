@@ -1,6 +1,7 @@
-package io.powerledger.vpp.util;
+package io.powerledger.vppbatterymgr.util;
 
-import io.powerledger.vpp.dto.BatteryDto;
+
+import io.powerledger.vppbatterymgr.dto.BatteryDto;
 
 import java.util.ArrayList;
 import java.util.List;

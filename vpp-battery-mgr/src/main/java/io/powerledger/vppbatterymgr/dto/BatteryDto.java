@@ -1,4 +1,4 @@
-package io.powerledger.vpp.dto;
+package io.powerledger.vppbatterymgr.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package io.powerledger.vpp.dto;
+package io.powerledger.vppbatterymgr.dto;
 
 import lombok.Data;
 

@@ -1,4 +1,4 @@
-package io.powerledger.vpp.exception;
+package io.powerledger.vppbatterymgr.exception;
 
 public class ServiceException extends RuntimeException {
 

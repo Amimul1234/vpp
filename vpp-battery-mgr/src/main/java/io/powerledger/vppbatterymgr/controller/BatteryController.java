@@ -1,8 +1,8 @@
-package io.powerledger.vpp.controller;
+package io.powerledger.vppbatterymgr.controller;
 
-import io.powerledger.vpp.dto.BatteryDto;
-import io.powerledger.vpp.dto.ResponseDto;
-import io.powerledger.vpp.service.BatteryService;
+import io.powerledger.vppbatterymgr.dto.BatteryDto;
+import io.powerledger.vppbatterymgr.dto.ResponseDto;
+import io.powerledger.vppbatterymgr.service.BatteryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

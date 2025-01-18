@@ -1,7 +1,7 @@
-package io.powerledger.vpp.mapper;
+package io.powerledger.vppbatterymgr.mapper;
 
-import io.powerledger.vpp.dto.BatteryDto;
-import io.powerledger.vpp.entity.Battery;
+import io.powerledger.vppbatterymgr.dto.BatteryDto;
+import io.powerledger.vppbatterymgr.entity.Battery;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

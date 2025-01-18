@@ -1,6 +1,6 @@
-package io.powerledger.vpp.util;
+package io.powerledger.vppbatterymgr.util;
 
-import io.powerledger.vpp.dto.BulkRegistrationStatusDto;
+import io.powerledger.vppbatterymgr.dto.BulkRegistrationStatusDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;

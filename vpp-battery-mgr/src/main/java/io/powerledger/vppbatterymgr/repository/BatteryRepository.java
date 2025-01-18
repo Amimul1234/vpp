@@ -1,6 +1,6 @@
-package io.powerledger.vpp.repository;
+package io.powerledger.vppbatterymgr.repository;
 
-import io.powerledger.vpp.entity.Battery;
+import io.powerledger.vppbatterymgr.entity.Battery;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,7 +1,7 @@
-package io.powerledger.vpp.config;
+package io.powerledger.vppbatterymgr.config;
 
-import io.powerledger.vpp.dto.BatteryRegistrationMessageDto;
-import io.powerledger.vpp.exception.ServiceException;
+import io.powerledger.vppbatterymgr.dto.BatteryRegistrationMessageDto;
+import io.powerledger.vppbatterymgr.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,14 +1,14 @@
-package io.powerledger.vpp.service.impl;
+package io.powerledger.vppbatterymgr.service.impl;
 
-import io.powerledger.vpp.config.BatteryRegistrationProducer;
-import io.powerledger.vpp.dto.BatteryDto;
-import io.powerledger.vpp.dto.BatteryRegistrationMessageDto;
-import io.powerledger.vpp.dto.BulkRegistrationStatusDto;
-import io.powerledger.vpp.dto.ResponseDto;
-import io.powerledger.vpp.enums.BatteryRegistrationStatus;
-import io.powerledger.vpp.service.BatteryService;
-import io.powerledger.vpp.util.BatchUtil;
-import io.powerledger.vpp.util.CacheUtil;
+import io.powerledger.vppbatterymgr.config.BatteryRegistrationProducer;
+import io.powerledger.vppbatterymgr.dto.BatteryDto;
+import io.powerledger.vppbatterymgr.dto.BatteryRegistrationMessageDto;
+import io.powerledger.vppbatterymgr.dto.BulkRegistrationStatusDto;
+import io.powerledger.vppbatterymgr.dto.ResponseDto;
+import io.powerledger.vppbatterymgr.enums.BatteryRegistrationStatus;
+import io.powerledger.vppbatterymgr.service.BatteryService;
+import io.powerledger.vppbatterymgr.util.BatchUtil;
+import io.powerledger.vppbatterymgr.util.CacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,12 +58,10 @@ public class BatteryServiceImpl implements BatteryService {
 
         List<List<BatteryDto>> batches = BatchUtil.splitBatteriesIntoBatches(batteries, batchSize);
 
-        IntStream.range(0, totalBatches)
-                .parallel()
-                .forEach(index -> {
-                    List<BatteryDto> batch = batches.get(index);
-                    processBatch(batch, bulkRequestId, totalBatches, index + 1);
-                });
+        IntStream.range(0, totalBatches).parallel().forEach(index -> {
+            List<BatteryDto> batch = batches.get(index);
+            processBatch(batch, bulkRequestId, totalBatches, index + 1);
+        });
 
         finalizeBulkRegistrationStatus(bulkRequestId);
 
@@ -101,8 +99,7 @@ public class BatteryServiceImpl implements BatteryService {
         cacheUtil.initializeCacheEntry(bulkRequestId, status);
     }
 
-    private BatteryRegistrationMessageDto createBatchMessage(List<BatteryDto> batch, String batchRequestId,
-                                                             String bulkRequestId, int totalBatches, int currentBatch) {
+    private BatteryRegistrationMessageDto createBatchMessage(List<BatteryDto> batch, String batchRequestId, String bulkRequestId, int totalBatches, int currentBatch) {
         BatteryRegistrationMessageDto message = new BatteryRegistrationMessageDto();
         message.setBulkRequestId(bulkRequestId);
         message.setBatchRequestId(batchRequestId);
@@ -113,8 +110,7 @@ public class BatteryServiceImpl implements BatteryService {
         return message;
     }
 
-    private void updateBulkRegistrationStatus(String bulkRequestId, String batchRequestId, String error,
-                                              List<BatteryDto> failedBatch) {
+    private void updateBulkRegistrationStatus(String bulkRequestId, String batchRequestId, String error, List<BatteryDto> failedBatch) {
         BulkRegistrationStatusDto status = cacheUtil.getCacheEntry(bulkRequestId);
         if (status == null) {
             log.error(String.format(ERROR_CACHE_MISSING_MSG, bulkRequestId));
@@ -132,8 +128,7 @@ public class BatteryServiceImpl implements BatteryService {
         }
 
         cacheUtil.updateCacheEntry(bulkRequestId, status);
-        log.info("Updated status for bulk request ID: {} - Completed: {}, Failed: {}",
-                bulkRequestId, status.getCompletedBatches(), status.getFailedBatches());
+        log.info("Updated status for bulk request ID: {} - Completed: {}, Failed: {}", bulkRequestId, status.getCompletedBatches(), status.getFailedBatches());
     }
 
     private void finalizeBulkRegistrationStatus(String bulkRequestId) {

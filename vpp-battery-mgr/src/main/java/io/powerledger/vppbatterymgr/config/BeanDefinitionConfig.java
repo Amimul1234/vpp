@@ -1,9 +1,9 @@
-package io.powerledger.vpp.config;
+package io.powerledger.vppbatterymgr.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.powerledger.vpp.dto.BulkRegistrationStatusDto;
+import io.powerledger.vppbatterymgr.dto.BulkRegistrationStatusDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

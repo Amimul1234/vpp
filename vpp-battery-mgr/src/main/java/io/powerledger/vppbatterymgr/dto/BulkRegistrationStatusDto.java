@@ -1,6 +1,6 @@
-package io.powerledger.vpp.dto;
+package io.powerledger.vppbatterymgr.dto;
 
-import io.powerledger.vpp.enums.BatteryRegistrationStatus;
+import io.powerledger.vppbatterymgr.enums.BatteryRegistrationStatus;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

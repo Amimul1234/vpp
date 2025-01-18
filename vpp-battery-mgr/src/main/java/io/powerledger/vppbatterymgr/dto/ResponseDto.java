@@ -1,4 +1,4 @@
-package io.powerledger.vpp.dto;
+package io.powerledger.vppbatterymgr.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
