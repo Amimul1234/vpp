@@ -1,6 +1,6 @@
 spring:
     application:
-        name: vpp
+        name: vpp-battery-mgr
 
     datasource:
         url: jdbc:mysql://localhost:3306/vppdb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
@@ -46,10 +46,8 @@ spring:
 kafka:
     topic:
         batteries: battery-topic
-
-    group:
-        id: battery-consumer-group
-
     battery:
         batch-size: 1
         retry-attempts: 3
+server:
+    port: 8081
