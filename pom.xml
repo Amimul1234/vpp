@@ -14,6 +14,8 @@
         <module>vpp-battery-mgr</module>
         <module>vpp-gateway</module>
         <module>vpp-consumer</module>
+        <module>vpp-auth</module>
+        <module>vpp-service-registry</module>
     </modules>
 
     <properties>
