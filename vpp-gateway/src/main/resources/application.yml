@@ -4,20 +4,18 @@ server:
 spring:
     cloud:
         gateway:
+            globalcors:
+                cors-configurations:
+                    '[/**]':
+                        allowedOriginPatterns: "*"
+                        allowedMethods: GET, POST, PUT, DELETE, OPTIONS
+                        allowedHeaders: "*"
+                        allowCredentials: true
             routes:
-                - id: vpp-battery-mgr
-                  uri: http://localhost:8081
-                  predicates:
-                      - Path=/api/v1/batteries/**
-                  filters:
-                      - RequestRateLimiter=redis-rate-limiter
-                      - RewritePath=/api/v1/batteries/(?<segment>.*), /batteries/${segment}
-                  metadata:
-                      redis-rate-limiter:
-                          replenishRate: 10
-                          burstCapacity: 20
-            default-filters:
-                - name: JwtAuthenticationFilter
+                -   id: vpp-battery-mgr
+                    uri: lb://vpp-battery-mgr
+                    predicates:
+                        - Path=/api/v1/batteries/**
 
     data:
         redis:
@@ -26,6 +24,10 @@ spring:
             password: vpp
             database: 0
             timeout: 2000ms
+    application:
+        name: vpp-gateway
 
-jwt:
-    secret: vpp-gateway
+eureka:
+    client:
+        serviceUrl:
+            defaultZone: http://localhost:8761/eureka/
